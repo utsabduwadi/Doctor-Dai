@@ -2,5 +2,104 @@
 
 {% block title %}Signup Page{% endblock %}
 {% block content %}
-<h2> SignUp Page</h2>
+
+<div
+  class="d-flex align-items-center justify-content-center"
+  style="min-height: 300px; padding-top: 20px"
+>
+  <div
+    class="w-100"
+    style="
+      max-width: 500px;
+      padding: 30px;
+      border-radius: 20px;
+      border:solid;
+    "
+  >
+    <form method="POST">
+      <div class="text-center mb-3">
+        <h2>SignUp</h2>
+      </div>
+      <br />
+      <div class="form-outline mb-4">
+        <label class="form-label d-flex align-items-center" for="form2Example1">
+          <img
+            src="static/images/user.png"
+            alt="User Icon"
+            style="height: 24px; width: 24px; margin-right: 8px"
+          />
+          User Name
+        </label>
+        <input
+          type="text"
+          id="form2Example1"
+          class="form-control"
+          name="name"
+          placeholder="Username"
+        />
+      </div>
+      <div class="form-outline mb-4">
+        <label class="form-label d-flex align-items-center" for="form2Example2">
+          <img
+            src="static/images/email.png"
+            alt="User Icon"
+            style="height: 24px; width: 24px; margin-right: 8px"
+          />
+          Email
+        </label>
+        <input
+          type="email"
+          id="form2Example2"
+          class="form-control"
+          name="email"
+          placeholder="Email"
+        />
+      </div>
+      <div class="form-outline mb-4">
+        <label class="form-label d-flex align-items-center" for="form2Example3">
+          <img
+            src="static/images/passs.png"
+            alt="User Icon"
+            style="height: 24px; width: 24px; margin-right: 8px"
+          />
+          Password
+        </label>
+        <input
+          type="password"
+          id="form2Example3"
+          class="form-control"
+          name="password1"
+          placeholder="Password"
+        />
+      </div>
+      <div class="form-outline mb-4">
+        <label class="form-label d-flex align-items-center" for="form2Example4">
+          <img
+            src="static/images/passs.png"
+            alt="User Icon"
+            style="height: 24px; width: 24px; margin-right: 8px"
+          />
+          Confirm Password
+        </label>
+        <input
+          type="password"
+          id="form2Example4"
+          class="form-control"
+          name="password2"
+          placeholder="Re-Type Password"
+        />
+      </div>
+
+     
+
+      <button type="submit" class="btn btn-primary btn-block mb-4 w-100">
+        Sign in
+      </button>
+
+      <div class="text-center">
+        <p>Already a member? <a href="{{url_for('login_page')}}">Login</a></p>
+      </div>
+    </form>
+  </div>
+</div>
 {% endblock %}

@@ -1,7 +1,45 @@
 {% extends 'base.html' %}
 
 {% block title %}Login Page{% endblock %}
-{% block content %}
 
-<h1>Login page</h1>
+
+{% block content %}
+<div class="containerlogin">
+    <div class="w-100"
+        style="border:solid black;border-radius:20px; max-width: 500px; padding: 30px;border-width:0.5px; ">
+        <form method="POST">
+            <div class="text-center mb-3">
+                <img src="static/images/login.jpeg" alt="Login Image" style="height: 200px; width: 200px;">
+            </div>
+            <br>
+            <div class="form-outline mb-4">
+                <label class="form-label d-flex align-items-center" for="form2Example1">
+                    <img src="static/user.png" alt="User Icon" style="height: 24px; width: 24px; margin-right: 8px;">
+                    User Name
+                </label>
+                <input type="text" id="form2Example1" class="form-control" name="name" placeholder="Username" />
+            </div>
+
+            <div class="form-outline mb-4">
+                <label class="form-label d-flex align-items-center" for="form2Example1">
+                    <img src="static/passs.png" alt="User Icon" style="height: 24px; width: 24px; margin-right: 8px;">
+                    Password
+                </label>
+                <input type="password" id="form2Example1" class="form-control" name="password" placeholder="Password" />
+            </div>
+
+            <div class="row mb-4">
+                <div class="col text-center">
+                    <a href="{{url_for('home_page')}}">Forgot password?</a>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block mb-4 w-100">Sign in</button>
+
+            <div class="text-center">
+                <p>Not a member? <a href="{{url_for('home_page')}}">Register</a></p>
+            </div>
+        </form>
+    </div>
+    </div>
 {% endblock %}
