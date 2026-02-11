@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyze Symptoms</title>
+    <style>
+        :root {
+            --bg: #f3f7fb;
+            --card: #ffffff;
+            --primary: #0f766e;
+            --text: #0b1f2a;
+            --muted: #4b6270;
+            --border: #d2dee8;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text);
+            background: linear-gradient(135deg, #edf4fb 0%, #f8fcff 50%, #eaf7f5 100%);
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 12px 32px rgba(11, 31, 42, 0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            margin: 0 0 20px;
+            color: var(--muted);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 10px;
+            margin-bottom: 18px;
+            max-height: 420px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            background: #fbfeff;
+        }
+
+        .symptom-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            border-radius: 8px;
+        }
+
+        .symptom-item:hover {
+            background: #eef7f6;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .predict-btn {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .clear-btn {
+            background: #dce7ef;
+            color: #123;
+        }
+
+        .result {
+            margin-top: 20px;
+            border: 1px solid #aadfd8;
+            background: #effcf9;
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+        .result h2 {
+            margin: 0 0 6px;
+            font-size: 1.1rem;
+        }
+
+        .result p {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <h1>Disease Analysis</h1>
+        <p class="subtitle">Select symptoms from the model dataset and click Predict.</p>
+
+        <form method="post" action="{{ url_for('analyze_page') }}">
+            <section class="grid" aria-label="Symptom list">
+                {% for symptom in symptom_options %}
+                <label class="symptom-item" for="symptom_{{ loop.index }}">
+                    <input
+                        type="checkbox"
+                        id="symptom_{{ loop.index }}"
+                        name="symptoms"
+                        value="{{ symptom.value }}"
+                        {% if symptom.value in selected_symptoms %}checked{% endif %}
+                    >
+                    <span>{{ symptom.label }}</span>
+                </label>
+                {% endfor %}
+            </section>
+
+            <div class="actions">
+                <button class="predict-btn" type="submit">Predict Disease</button>
+                <button class="clear-btn" type="reset">Clear Selection</button>
+            </div>
+        </form>
+
+        {% if prediction %}
+        <section class="result" aria-live="polite">
+            <h2>Predicted Disease</h2>
+            <p>{{ prediction }}</p>
+        </section>
+        {% endif %}
+    </main>
+</body>
+</html>
