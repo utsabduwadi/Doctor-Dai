@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+
+
+
+<!-- 
+{% block content %}
+<style>
+    :root {
+        --bg: #f3f7fb;
+        --card: #ffffff;
+        --primary: #0f766e;
+        --text: #0b1f2a;
+        --muted: #4b6270;
+        --border: #d2dee8;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: 24px auto;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 24px;
+        box-shadow: 0 12px 32px rgba(11, 31, 42, 0.08);
+    }
+
+    h1 {
+        font-size: 1.8rem;
+        margin-bottom: 10px;
+    }
+
+    .subtitle {
+        margin-bottom: 20px;
+        color: var(--muted);
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 10px;
+        max-height: 420px;
+        overflow-y: auto;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px;
+        background: #fbfeff;
+    }
+
+    .symptom-item {
+        display: flex;
+        padding: 6px 8px;
+        gap: 8px;
+        align-items: center;
+        border-radius: 8px;
+    }
+
+    .symptom-item:hover {
+        background: #eef7f6;
+    }
+
+    .actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .predict-btn {
+        background: var(--primary);
+        color: white;
+        padding: 10px 16px;
+        border-radius: 8px;
+        border: none;
+    }
+
+    .clear-btn {
+        background: #dce7ef;
+        color: #123;
+        padding: 10px 16px;
+        border-radius: 8px;
+        border: none;
+    }
+
+    .result {
+        margin-top: 20px;
+        background: #effcf9;
+        border: 1px solid #aadfd8;
+        border-radius: 10px;
+        padding: 14px;
+    }
+
+    .result p {
+        font-size: 1.05rem;
+        font-weight: 600;
+    }
+</style>
+
+<main class="container">
+    <h1>Disease Analysis</h1>
+    <p class="subtitle">Select symptoms from the model dataset and click Predict.</p>
+
+    <form method="post" action="{{ url_for('analyze_page') }}">
+        <section class="grid">
+            {% for symptom in symptom_options %}
+            <label class="symptom-item">
+                <input type="checkbox"
+                    name="symptoms"
+                    value="{{ symptom.value }}"
+                    {% if symptom.value in selected_symptoms %}checked{% endif %}
+                >
+                <span>{{ symptom.label }}</span>
+            </label>
+            {% endfor %}
+        </section>
+
+        <div class="actions">
+            <button class="predict-btn" type="submit">Predict Disease</button>
+            <button class="clear-btn" type="reset">Clear</button>
+        </div>
+    </form>
+
+    {% if prediction %}
+    <section class="result">
+        <h2>Predicted Disease</h2>
+        <p>{{ prediction }}</p>
+    </section>
+    {% endif %}
+</main>
+
+{% endblock %} -->
