@@ -1,81 +1,198 @@
-html , body{
-    height: 100%;
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f7f9fc;
+:root {
+    --primary: #12a3b8;
+    --secondary: #8b3dff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --background: #ffffff;
 }
-nav {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 70px;
 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Times New Roman", serif;
+}
+
+body {
+    background: var(--background);
+    color: var(--text);
+}
+
+/* ---------- NAVBAR ---------- */
+
+header {
+    background: linear-gradient(90deg, #d1e5f1, #c4ddec);
+    border-bottom: 1px solid var(--border);
+    /* background: white; */
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    
+}
+
+.nav-container {
+    
+    max-width: 1200px;
+    margin: auto;
+    padding: 15px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-
-    padding: 0 40px;
-    background: #0a66c2;
-    color: white;
-    z-index: 1000;
 }
 
-/* NEW: balancing div on left */
-.nav-left {
-    flex: 1;
-}
-
-/* Center logo */
 .logo {
-    flex: 1;
     display: flex;
-    justify-content: center;
     align-items: center;
+    gap: 10px;
 }
 
 .logo img {
     height: 30px;
-    margin-right: 10px;
 }
 
-/* Right-side links */
-.nav-links {
-    flex: 1;
-    display: flex;
-    justify-content: flex-end;
+.logo span {
+    font-size: 20px;
+    font-weight: bold;
+    background: linear-gradient(to right, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+nav a {
+    margin: 0 12px;
+    text-decoration: none;
+    font-weight: 500;
+    color: var(--text);
+    transition: 0.3s;
+}
+
+nav a:hover {
+    color: var(--primary);
+}
+
+.btn-primary {
+    background: linear-gradient(to right, var(--primary), var(--secondary));
+    color: white;
+    padding: 8px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-outline {
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    padding: 8px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    background: transparent;
+}
+
+/* ---------- HERO ---------- */
+
+.hero {
+    max-width: 1200px;
+    margin: auto;
+    padding: 100px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
     align-items: center;
 }
 
-.nav-links a {
-    color: white;
-    margin-left: 20px;
-    text-decoration: none;
+.hero h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
 }
 
-/* Login/Signup Buttons */
-.btn {
-    
-    color: #0a66c2;
-    padding: 6px 12px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
+.gradient-text {
+    background: linear-gradient(to right, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-/* Main content spacing */
-.main-content {
-    margin-top: 70px;
-    min-height: calc(100vh - 70px);
-    padding: 40px;
-    overflow-y: auto;
+.hero p {
+    color: var(--muted);
+    margin-bottom: 30px;
+    font-size: 18px;
 }
 
-/* Card styles */
+.hero-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.hero-visual {
+    position: relative;
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.circle-bg {
+    width: 250px;
+    height: 250px;
+    background: linear-gradient(to right, var(--primary), var(--secondary));
+    border-radius: 50%;
+    opacity: 0.15;
+    filter: blur(40px);
+}
+
+/* ---------- SECTION ---------- */
+
+.section {
+    padding: 100px 20px;
+    max-width: 1200px;
+    margin: auto;
+}
+
+.section h2 {
+    text-align: center;
+    font-size: 40px;
+    margin-bottom: 20px;
+}
+
+.section p.section-sub {
+    text-align: center;
+    color: var(--muted);
+    margin-bottom: 60px;
+}
+
+/* ---------- CARDS ---------- */
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+}
+
 .card {
-    background: white;
-    padding: 20px;
-    width: 200px;
-    border-radius: 10px;
-    margin-top: 20px;
+    border: 1px solid var(--border);
+    padding: 30px;
+    border-radius: 20px;
+    transition: 0.3s;
+}
+
+.card:hover {
+    border-color: var(--primary);
+}
+
+.card h3 {
+    margin-bottom: 15px;
+}
+
+.card p {
+    color: var(--muted);
+}
+
+/* ---------- FOOTER ---------- */
+
+footer {
+    border-top: 1px solid var(--border);
+    padding: 50px 20px;
+    text-align: center;
+    color: var(--muted);
 }

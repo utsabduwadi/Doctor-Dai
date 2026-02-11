@@ -1,8 +1,53 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% block content %}
 
-{% block title %}Home Page{% endblock %}
-{% block content%}
+<section class="hero">
+  <div>
+    <h1 style="font-family:  Helvetica, sans-serif;font-weight:bold;">
+      Understand Your
+      <span class="gradient-text" style="font-family: Helvetica, sans-serif;font-weight:bold;">Health Better</span>
+    </h1>
 
-<h1>Home Page</h1>
+    <p style="">
+      Analyze your symptoms instantly and connect with qualified doctors.
+      AI-powered insights for smarter healthcare decisions.
+    </p>
+
+    <div class="hero-buttons">
+      <a href="/analyze" class="btn-primary">Start Analysis</a>
+      <a href="#" class="btn-outline">Learn More</a>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="circle-bg"></div>
+  </div>
+</section>
+
+<section class="section">
+  <h2>How It Works</h2>
+  <p class="section-sub">Simple, fast, and accurate in three easy steps</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>Analyze Symptoms</h3>
+      <p>Describe symptoms and let AI analyze possible conditions.</p>
+    </div>
+
+    <div class="card">
+      <h3>Track History</h3>
+      <p>Monitor BMI, height, and weight over time.</p>
+    </div>
+
+    <div class="card">
+      <h3>Connect with Doctors</h3>
+      <p>Find verified healthcare professionals instantly.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  © 2026 susu. Replace 'susu' with official name.
+</footer>
 
 {% endblock %}
