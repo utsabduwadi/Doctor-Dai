@@ -1,17 +1,16 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-
-
+{% block title %}Analyzer Page{% endblock %}
 
 {% block content %}
 
 <h2>Analyzers</h2>
-<!-- 
+
 <main class="container">
     <h1>Disease Analysis</h1>
     <p class="subtitle">Select symptoms from the model dataset and click Predict.</p>
 
-    <form method="post" action="{{ url_for('analyze_page') }}">
+    <form method="post" action="{{ url_for('analyzer_page') }}">
         <section class="grid">
             {% for symptom in symptom_options %}
             <label class="symptom-item">
@@ -37,6 +36,6 @@
         <p>{{ prediction }}</p>
     </section>
     {% endif %}
-</main> -->
+</main>
 
 {% endblock %}

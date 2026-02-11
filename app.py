@@ -32,6 +32,19 @@ def login_page():
 def analyzer_page():
     return render_template('analyzer.html')
 
+@app.route('/doctors')
+def doctor_page():
+    return render_template('doctors.html')
+
+
+
+@app.route('/history')
+def history_page():
+    return render_template('history.html')
+
+@app.route('/signup')
+def signup_page():
+    return render_template('signup.html')
 
 if __name__ == "__main__":
     app.run(debug=True)

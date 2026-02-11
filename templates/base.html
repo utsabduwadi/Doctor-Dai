@@ -10,16 +10,22 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/analyze.css') }}">
 </head>
 <body>
-
 <nav class="main-nav">
+    <div class="nav-left">
+<div class="nav-links">
+    <a href="/">Home</a>
+        <a href="/history">History</a>
+</div>
+        
+    </div>
+
     <div class="logo">
         <img src="{{ url_for('static', filename='images/logo.png') }}">
         <span>susu</span>
     </div>
 
     <div class="nav-links">
-        <a href="/home">Home</a>
-        <a href="/history">History</a>
+       
         <a href="/analyzer">Analyze</a>
         <a href="/doctors">Doctors</a>
 
