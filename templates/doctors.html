@@ -2,5 +2,318 @@
 
 {% block title %}Doctors Page{% endblock %}
 {% block content %}
-<h2>Doctors Page</h2>
+<style>
+.doc-page {
+    max-width: 1250px;
+    margin: 22px auto 32px;
+    padding: 0 16px;
+}
+
+.doc-page h1 {
+    margin: 0 0 8px;
+    font-size: 44px;
+    line-height: 1.05;
+    font-weight: 700;
+}
+
+.doc-subtitle {
+    margin: 0 0 22px;
+    color: #5a6979;
+    font-size: 16px;
+}
+
+.doc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.55fr;
+    gap: 32px;
+    align-items: start;
+}
+
+.filter-card,
+.doctor-card {
+    background: #ffffff;
+    border: 1px solid #dde3ea;
+    border-radius: 10px;
+    box-shadow: 0 4px 14px rgba(16, 24, 40, 0.05);
+}
+
+.filter-card {
+    padding: 20px;
+}
+
+.filter-title {
+    font-size: 30px;
+    margin: 0 0 18px;
+    font-weight: 700;
+}
+
+.field-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.doc-input {
+    width: 100%;
+    border: 1px solid #d3dbe4;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 15px;
+    margin-bottom: 18px;
+}
+
+.availability-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border: 1px solid #d8e0e8;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 18px;
+}
+
+.availability-tabs input {
+    display: none;
+}
+
+.availability-tabs label {
+    text-align: center;
+    padding: 10px 8px;
+    background: #f7f9fb;
+    color: #425467;
+    cursor: pointer;
+    border-right: 1px solid #d8e0e8;
+    font-size: 14px;
+}
+
+.availability-tabs label:last-of-type {
+    border-right: none;
+}
+
+.availability-tabs input:checked + label {
+    background: #0a86c2;
+    color: #fff;
+}
+
+.apply-btn {
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 14px;
+    background: linear-gradient(90deg, #0a8dc9, #0a7db5);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.doctor-list {
+    display: grid;
+    gap: 18px;
+    margin-left: 14px;
+}
+
+.doctor-card {
+    padding: 14px;
+    display: grid;
+    grid-template-columns: 108px 1fr;
+    gap: 14px;
+    align-items: center;
+}
+
+.avatar {
+    width: 108px;
+    height: 108px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #d9ecf6, #bcdff0);
+    color: #1f4f69;
+    font-size: 34px;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+}
+
+.doctor-name {
+    margin: 0 0 4px;
+    font-size: 30px;
+    line-height: 1.05;
+}
+
+.doctor-specialty {
+    margin: 0 0 4px;
+    color: #0e7dab;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.doctor-meta {
+    margin: 0 0 12px;
+    color: #5f6d7a;
+    font-size: 20px;
+}
+
+.contact-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.contact-pill {
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.contact-pill.mail {
+    background: #0a8dc9;
+    color: #fff;
+}
+
+.contact-pill.phone {
+    background: #fff;
+    border: 1px solid #d6dee7;
+    color: #3f4d5b;
+}
+
+.no-result {
+    background: #fff;
+    border: 1px solid #dde3ea;
+    border-radius: 10px;
+    padding: 20px;
+    color: #5b6978;
+    font-size: 18px;
+}
+
+@media (max-width: 1100px) {
+    .doc-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .doctor-list {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 760px) {
+    .doc-page h1 {
+        font-size: 32px;
+    }
+
+    .doc-subtitle {
+        font-size: 15px;
+    }
+
+    .filter-title {
+        font-size: 24px;
+    }
+
+    .field-label {
+        font-size: 18px;
+    }
+
+    .doctor-card {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .avatar {
+        margin: 0 auto;
+    }
+
+    .doctor-name {
+        font-size: 26px;
+    }
+
+    .doctor-specialty,
+    .doctor-meta {
+        font-size: 18px;
+    }
+
+    .contact-row {
+        justify-content: center;
+    }
+
+    .contact-pill {
+        font-size: 16px;
+    }
+}
+</style>
+
+<section class="doc-page">
+    <h1>Find Your Specialist</h1>
+    <p class="doc-subtitle">
+        Based on your health condition, we recommend consulting with the following specialists
+    </p>
+
+    <div class="doc-grid">
+        <aside class="filter-card">
+            <h2 class="filter-title">Filter Doctors</h2>
+            <form method="get" action="{{ url_for('doctor_page') }}">
+                <label class="field-label" for="specialty">Specialty</label>
+                <input
+                    class="doc-input"
+                    id="specialty"
+                    name="specialty"
+                    list="specialty-list"
+                    value="{{ selected_specialty }}"
+                    placeholder="Search specialties"
+                >
+                <datalist id="specialty-list">
+                    {% for specialty in specialty_options %}
+                    <option value="{{ specialty }}">
+                    {% endfor %}
+                </datalist>
+
+                <label class="field-label" for="location">Location</label>
+                <input
+                    class="doc-input"
+                    id="location"
+                    name="location"
+                    value="{{ selected_location }}"
+                    placeholder="Enter city or zip code"
+                >
+
+                <label class="field-label">Availability</label>
+                <div class="availability-tabs">
+                    <input type="radio" id="avail_today" name="availability" value="today" {% if selected_availability == 'today' %}checked{% endif %}>
+                    <label for="avail_today">Today</label>
+
+                    <input type="radio" id="avail_week" name="availability" value="week" {% if selected_availability == 'week' %}checked{% endif %}>
+                    <label for="avail_week">This Week</label>
+
+                    <input type="radio" id="avail_month" name="availability" value="month" {% if selected_availability == 'month' %}checked{% endif %}>
+                    <label for="avail_month">This Month</label>
+                </div>
+
+                <button type="submit" class="apply-btn">Apply Filters</button>
+            </form>
+        </aside>
+
+        <section class="doctor-list">
+            {% if doctors %}
+                {% for doctor in doctors %}
+                <article class="doctor-card">
+                    <div class="avatar">{{ doctor.avatar }}</div>
+                    <div>
+                        <h3 class="doctor-name">{{ doctor.name }}</h3>
+                        <p class="doctor-specialty">{{ doctor.specialty }}</p>
+                        <p class="doctor-meta">{{ doctor.experience }} • {{ doctor.focus }}</p>
+                        <div class="contact-row">
+                            <span class="contact-pill mail">{{ doctor.email }}</span>
+                            <span class="contact-pill phone">{{ doctor.phone }}</span>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            {% else %}
+                <div class="no-result">
+                    No doctors matched your filters. Try a different specialty, location, or availability.
+                </div>
+            {% endif %}
+        </section>
+    </div>
+</section>
 {% endblock content %}

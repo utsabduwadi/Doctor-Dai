@@ -1,41 +1,165 @@
 {% extends "base.html" %}
-
-{% block title %}Analyzer Page{% endblock %}
-
+{% block title %}Analyzer{% endblock %}
 {% block content %}
+<style>
+.an-wrap{max-width:1024px;margin:28px auto;padding:0 16px}
+.an-head{text-align:center;margin-bottom:22px}
+.an-head h1{font-size:44px;font-weight:700;margin:0 0 8px}
+.an-head p{color:#667085;margin:0}
+.an-card,.res-card,.warn-card{background:#fff;border:1px solid #e4e7ec;border-radius:12px}
+.an-card{padding:24px;box-shadow:0 8px 24px rgba(16,24,40,.06)}
+.sec-title{font-weight:700;margin:0 0 4px}
+.sec-sub{margin:0 0 14px;color:#667085;font-size:14px}
+.picker{position:relative}
+.search{width:100%;padding:12px 14px;border:1px solid #d0d5dd;border-radius:10px}
+.drop{position:absolute;left:0;right:0;top:calc(100% + 6px);max-height:260px;overflow:auto;background:#fff;border:1px solid #d0d5dd;border-radius:10px;display:none;z-index:100}
+.drop.open{display:block}
+.opt{display:block;width:100%;text-align:left;border:0;background:#fff;padding:10px 12px}
+.opt:hover,.opt.active{background:#eef7ff}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:4px 10px;border-radius:999px;background:#eef7ff;border:1px solid #cce6ff;font-size:12px}
+.chip button{border:0;background:transparent;cursor:pointer;padding:0}
+.btn-main{margin-top:14px;width:100%;border:0;border-radius:8px;padding:12px 16px;background:#0a84c1;color:#fff;font-weight:700}
+.results{margin-top:24px}
+.res-title{font-size:28px;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.res-card{padding:16px}
+.muted{color:#667085;font-size:13px}
+.pred{font-size:34px;font-weight:700;margin:4px 0 8px}
+.top-row{display:flex;justify-content:space-between;gap:10px;padding:9px 10px;border:1px solid #e4e7ec;border-radius:8px;margin-bottom:8px}
+.warn-card{margin-top:14px;padding:12px 14px;background:#fffaeb}
+@media (max-width:760px){.grid{grid-template-columns:1fr}.an-head h1{font-size:34px}}
+</style>
 
-<h2>Analyzers</h2>
+<div class="an-wrap">
+  <div class="an-head">
+    <h1>Analyze Your Symptoms</h1>
+    <p>Select your symptoms from the dropdown below and our AI model will predict potential diseases</p>
+  </div>
 
-<main class="container">
-    <h1>Disease Analysis</h1>
-    <p class="subtitle">Select symptoms from the model dataset and click Predict.</p>
-
+  <div class="an-card">
     <form method="post" action="{{ url_for('analyzer_page') }}">
-        <section class="grid">
-            {% for symptom in symptom_options %}
-            <label class="symptom-item">
-                <input type="checkbox"
-                    name="symptoms"
-                    value="{{ symptom.value }}"
-                    {% if symptom.value in selected_symptoms %}checked{% endif %}
-                >
-                <span>{{ symptom.label }}</span>
-            </label>
-            {% endfor %}
-        </section>
+      <p class="sec-title">Select Your Symptoms</p>
+      <p class="sec-sub">Choose all symptoms you are currently experiencing</p>
 
-        <div class="actions">
-            <button class="predict-btn" type="submit">Predict Disease</button>
-            <button class="clear-btn" type="reset">Clear</button>
+      <div class="picker" id="picker">
+        <input id="search" class="search" type="text" placeholder="Search and select symptoms..." autocomplete="off">
+        <div id="drop" class="drop">
+          {% for symptom in symptom_options %}
+          <button type="button" class="opt{% if symptom.value in selected_symptoms %} active{% endif %}" data-value="{{ symptom.value }}" data-label="{{ symptom.label }}">{{ symptom.label }}</button>
+          {% endfor %}
         </div>
+      </div>
+
+      <div id="chips" class="chips"></div>
+      <div id="hidden-inputs"></div>
+      <button type="submit" class="btn-main">Analyze Symptoms</button>
     </form>
+  </div>
 
-    {% if prediction %}
-    <section class="result">
-        <h2>Predicted Disease</h2>
-        <p>{{ prediction }}</p>
-    </section>
-    {% endif %}
-</main>
+  <div class="results">
+    <h2 class="res-title">Analysis Results</h2>
+    <div class="grid">
+      <div class="res-card">
+        <p class="muted">Predicted Disease</p>
+        <p class="pred">{{ prediction if prediction else "Submit symptoms to predict" }}</p>
+        <p class="muted">Based on your selected symptoms, our model predicts possible conditions.</p>
+      </div>
 
+      <div class="res-card">
+        <p class="muted">Top 3 Predicted Diseases</p>
+        {% if top_predictions %}
+          {% for item in top_predictions %}
+          <div class="top-row">
+            <span>{{ loop.index }}. {{ item.disease }}</span>
+            <strong>{{ item.probability }}%</strong>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="muted">Submit symptoms to view top predictions.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="res-card" style="margin-top:14px">
+      <p class="muted" style="margin-bottom:8px">Recommended Next Steps</p>
+      <ul>
+        {% for step in next_steps %}
+        <li>{{ step }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="warn-card">
+      This is an AI prediction and should not replace professional medical advice. Please consult with a healthcare provider for accurate diagnosis.
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const options = Array.from(document.querySelectorAll(".opt"));
+  const search = document.getElementById("search");
+  const drop = document.getElementById("drop");
+  const chips = document.getElementById("chips");
+  const hidden = document.getElementById("hidden-inputs");
+  const selected = new Set({{ selected_symptoms|tojson }});
+
+  function renderHidden() {
+    hidden.innerHTML = "";
+    Array.from(selected).forEach((v) => {
+      const i = document.createElement("input");
+      i.type = "hidden";
+      i.name = "symptoms";
+      i.value = v;
+      hidden.appendChild(i);
+    });
+  }
+
+  function renderChips() {
+    chips.innerHTML = "";
+    Array.from(selected).forEach((v) => {
+      const opt = options.find((o) => o.dataset.value === v);
+      if (!opt) return;
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.innerHTML = `<span>${opt.dataset.label}</span><button type="button" data-remove="${v}">x</button>`;
+      chips.appendChild(chip);
+    });
+  }
+
+  function sync() {
+    options.forEach((o) => o.classList.toggle("active", selected.has(o.dataset.value)));
+    renderHidden();
+    renderChips();
+  }
+
+  options.forEach((o) => o.addEventListener("click", () => {
+    const v = o.dataset.value;
+    if (selected.has(v)) selected.delete(v); else selected.add(v);
+    sync();
+  }));
+
+  chips.addEventListener("click", (e) => {
+    if (!e.target.matches("button[data-remove]")) return;
+    selected.delete(e.target.dataset.remove);
+    sync();
+  });
+
+  search.addEventListener("focus", () => drop.classList.add("open"));
+  search.addEventListener("input", () => {
+    drop.classList.add("open");
+    const q = search.value.toLowerCase().trim();
+    options.forEach((o) => {
+      o.style.display = o.dataset.label.toLowerCase().includes(q) ? "block" : "none";
+    });
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest("#picker")) drop.classList.remove("open");
+  });
+
+  sync();
+})();
+</script>
 {% endblock %}
