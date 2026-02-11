@@ -18,7 +18,7 @@ def prettify_symptom(symptom):
     return " ".join(symptom.replace("_", " ").split()).title()
 
 
-@app.route("/home")
+@app.route("/")
 def home_page():
     return render_template('home.html')
 
@@ -30,4 +30,8 @@ def login_page():
 
 @app.route('/analyzer')
 def analyzer_page():
-    return render_template('analyze.html')
+    return render_template('analyzer.html')
+
+
+if __name__ == "__main__":
+    app.run(debug=True)

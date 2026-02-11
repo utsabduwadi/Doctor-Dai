@@ -1,12 +1,4 @@
-{% extends 'base.html' %}
-
-
-
-
-<!-- 
-{% block content %}
-<style>
-    :root {
+:root {
         --bg: #f3f7fb;
         --card: #ffffff;
         --primary: #0f766e;
@@ -97,38 +89,3 @@
         font-size: 1.05rem;
         font-weight: 600;
     }
-</style>
-
-<main class="container">
-    <h1>Disease Analysis</h1>
-    <p class="subtitle">Select symptoms from the model dataset and click Predict.</p>
-
-    <form method="post" action="{{ url_for('analyze_page') }}">
-        <section class="grid">
-            {% for symptom in symptom_options %}
-            <label class="symptom-item">
-                <input type="checkbox"
-                    name="symptoms"
-                    value="{{ symptom.value }}"
-                    {% if symptom.value in selected_symptoms %}checked{% endif %}
-                >
-                <span>{{ symptom.label }}</span>
-            </label>
-            {% endfor %}
-        </section>
-
-        <div class="actions">
-            <button class="predict-btn" type="submit">Predict Disease</button>
-            <button class="clear-btn" type="reset">Clear</button>
-        </div>
-    </form>
-
-    {% if prediction %}
-    <section class="result">
-        <h2>Predicted Disease</h2>
-        <p>{{ prediction }}</p>
-    </section>
-    {% endif %}
-</main>
-
-{% endblock %} -->
