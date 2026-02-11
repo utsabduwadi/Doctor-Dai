@@ -259,7 +259,7 @@
         const drop = document.getElementById("drop");
         const chips = document.getElementById("chips");
         const hidden = document.getElementById("hidden-inputs");
-        const selected = new Set({{ selected_symptoms| tojson }});
+        const selected = new Set({{ selected_symptoms|tojson }});
 
     function renderHidden() {
         hidden.innerHTML = "";
@@ -294,6 +294,11 @@
         const v = o.dataset.value;
         if (selected.has(v)) selected.delete(v); else selected.add(v);
         sync();
+        drop.classList.remove("open");
+        search.value = "";
+        options.forEach((item) => {
+            item.style.display = "block";
+        });
     }));
 
     chips.addEventListener("click", (e) => {
@@ -315,6 +320,7 @@
         if (!e.target.closest("#picker")) drop.classList.remove("open");
     });
 
-    sync();})
+    sync();
+})();
 </script>
 {% endblock %}
