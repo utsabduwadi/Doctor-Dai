@@ -14,6 +14,10 @@
     font-family: "Times New Roman", serif;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     background: var(--background);
     color: var(--text);
@@ -60,6 +64,16 @@ nav a {
 
 nav a:hover {
     color: var(--primary);
+}
+
+.welcome-text {
+    margin: 0 10px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    background: linear-gradient(90deg, #0b7db6 0%, #12a3b8 45%, #2e5fb8 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
 
 .btn-primary {
@@ -152,6 +166,39 @@ nav a:hover {
     margin-bottom: 60px;
 }
 
+#how-it-works h2 {
+    background: linear-gradient(100deg, #0a7bb5 0%, #12a3b8 45%, #2e5fb8 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+#how-it-works {
+    position: relative;
+    margin-top: 24px;
+    margin-bottom: 0;
+    z-index: 0;
+}
+
+#how-it-works::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 100vw;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, #f5fbff 0%, #eef6fc 100%);
+    z-index: -1;
+}
+
+#how-it-works .section-sub {
+    background: linear-gradient(90deg, #4d6f8f 0%, #2f5976 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
 /* ---------- CARDS ---------- */
 
 .card-grid {
@@ -179,6 +226,25 @@ nav a:hover {
     color: var(--muted);
 }
 
+#how-it-works .card {
+    background: linear-gradient(145deg, #ffffff 0%, #f7fbff 100%);
+    border: 1px solid #d8e7f3;
+    box-shadow: 0 10px 24px rgba(25, 70, 117, 0.08), 0 2px 6px rgba(25, 70, 117, 0.05);
+}
+
+#how-it-works .card:hover {
+    border-color: #8fc6e3;
+    box-shadow: 0 16px 34px rgba(18, 85, 139, 0.14), 0 4px 10px rgba(18, 85, 139, 0.08);
+    transform: translateY(-4px);
+}
+
+#how-it-works .card h3 {
+    background: linear-gradient(95deg, #123556 0%, #0c79ad 85%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
 /* ---------- FOOTER ---------- */
 
 footer {
@@ -186,4 +252,24 @@ footer {
     padding: 50px 20px;
     text-align: center;
     color: var(--muted);
+}
+
+.home-footer {
+    position: relative;
+    padding: 28px 16px;
+    font-size: 14px;
+    border-top: none;
+    z-index: 0;
+}
+
+.home-footer::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 100vw;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, #eef6fc 0%, #e7f1fa 100%);
+    z-index: -1;
 }

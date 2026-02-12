@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% block title %}Home Page{% endblock %}
+
 {% block content %}
 
 <section class="hero">
@@ -15,7 +17,7 @@
 
     <div class="hero-buttons">
       <a href="/analyzer" class="btn-primary">Start Analysis</a>
-      <a href="#" class="btn-outline">Learn More</a>
+      <a href="#how-it-works" class="btn-outline">Learn More</a>
     </div>
   </div>
 
@@ -24,7 +26,7 @@
   </div>
 </section>
 
-<section class="section">
+<section id="how-it-works" class="section">
   <h2>How It Works</h2>
   <p class="section-sub">Simple, fast, and accurate in three easy steps</p>
 
@@ -46,7 +48,7 @@
   </div>
 </section>
 
-<footer>
+<footer class="home-footer">
   © 2026 susu. Replace 'susu' with official name.
 </footer>
 

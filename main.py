@@ -70,21 +70,34 @@ init_db()
 
 def init_dbp():
     with sqlite3.connect("personal_database.db") as conn:
-        command = """
-        CREATE TABLE IF NOT EXISTS users (
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS health_entries (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_name TEXT UNIQUE NOT NULL,
+            user_name TEXT NOT NULL,
             height REAL,
             weight REAL,
             Age INTEGER,
-            Gender TEXT NOT NULL,
+            Gender TEXT,
             Systolic INTEGER,
             Diastolic INTEGER,
             Heart_rate INTEGER,
             blood_sugar INTEGER
         )
-        """
-        conn.execute(command)
+        """)
+
+        # One-time migration from legacy table shape (users.user_name UNIQUE)
+        legacy_exists = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
+        ).fetchone()
+        if legacy_exists:
+            conn.execute("""
+                INSERT INTO health_entries (id, user_name, height, weight, Age, Gender, Systolic, Diastolic, Heart_rate, blood_sugar)
+                SELECT id, user_name, height, weight, Age, Gender, Systolic, Diastolic, Heart_rate, blood_sugar
+                FROM users
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM health_entries he WHERE he.id = users.id
+                )
+            """)
 
 init_dbp()
 def user_exists(username):
@@ -220,6 +233,170 @@ def load_doctors_from_excel():
 
 DOCTORS_DATA = load_doctors_from_excel()
 
+
+def _normalize_key(value):
+    return " ".join(str(value).replace("_", " ").strip().lower().split())
+
+
+def load_disease_doctor_assignments():
+    file_path = "Disease_With_Doctor_Assignment.xlsx"
+    ns_main = {"a": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
+    ns_rel_pkg = {"r": "http://schemas.openxmlformats.org/package/2006/relationships"}
+
+    def _column_index(cell_ref):
+        letters = "".join(ch for ch in str(cell_ref) if ch.isalpha())
+        index = 0
+        for ch in letters:
+            index = index * 26 + (ord(ch.upper()) - 64)
+        return max(index - 1, 0)
+
+    def _cell_text(cell, shared_strings):
+        cell_type = cell.attrib.get("t")
+        if cell_type == "s":
+            value_node = cell.find("a:v", ns_main)
+            raw = "" if value_node is None else (value_node.text or "")
+            if raw.isdigit():
+                idx = int(raw)
+                return shared_strings[idx] if idx < len(shared_strings) else ""
+            return ""
+        if cell_type == "inlineStr":
+            return "".join((t.text or "") for t in cell.findall(".//a:t", ns_main))
+        value_node = cell.find("a:v", ns_main)
+        return "" if value_node is None else (value_node.text or "")
+
+    try:
+        with zipfile.ZipFile(file_path) as workbook_zip:
+            shared_strings = []
+            if "xl/sharedStrings.xml" in workbook_zip.namelist():
+                shared_root = ET.fromstring(workbook_zip.read("xl/sharedStrings.xml"))
+                for si in shared_root.findall("a:si", ns_main):
+                    shared_strings.append("".join((t.text or "") for t in si.findall(".//a:t", ns_main)))
+
+            workbook_root = ET.fromstring(workbook_zip.read("xl/workbook.xml"))
+            rels_root = ET.fromstring(workbook_zip.read("xl/_rels/workbook.xml.rels"))
+            rel_map = {}
+            for rel in rels_root.findall("r:Relationship", ns_rel_pkg):
+                rid = rel.attrib.get("Id")
+                target = rel.attrib.get("Target", "")
+                if target.startswith("/"):
+                    target = target.lstrip("/")
+                elif not target.startswith("xl/"):
+                    target = f"xl/{target}"
+                rel_map[rid] = target
+
+            first_sheet = workbook_root.find("a:sheets/a:sheet", ns_main)
+            if first_sheet is None:
+                return {}
+            rid = first_sheet.attrib.get("{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id")
+            target_sheet = rel_map.get(rid)
+            if not target_sheet:
+                return {}
+
+            sheet_root = ET.fromstring(workbook_zip.read(target_sheet))
+            rows = []
+            for row in sheet_root.findall(".//a:sheetData/a:row", ns_main):
+                cells = row.findall("a:c", ns_main)
+                if not cells:
+                    continue
+                max_idx = max(_column_index(cell.attrib.get("r", "A1")) for cell in cells)
+                values = [""] * (max_idx + 1)
+                for cell in cells:
+                    values[_column_index(cell.attrib.get("r", "A1"))] = _cell_text(cell, shared_strings).strip()
+                rows.append(values)
+    except Exception:
+        return {}
+
+    disease_map = {}
+    for values in rows:
+        non_empty = [(i, v) for i, v in enumerate(values) if v]
+        if not non_empty:
+            continue
+
+        doctors_idx = None
+        doctors_text = ""
+        for idx, text in non_empty:
+            if "|" in text:
+                doctors_idx = idx
+                doctors_text = text
+                break
+        if doctors_idx is None:
+            continue
+
+        disease_text = ""
+        for idx, text in reversed(non_empty):
+            if idx < doctors_idx and text.lower() != "assigned_doctors":
+                disease_text = text
+                break
+        if not disease_text:
+            continue
+
+        disease_key = _normalize_key(disease_text)
+        doctor_names = [name.strip() for name in doctors_text.split("|") if name.strip()]
+        if not doctor_names:
+            continue
+
+        bucket = disease_map.setdefault(disease_key, [])
+        seen = {_normalize_key(name) for name in bucket}
+        for name in doctor_names:
+            name_key = _normalize_key(name)
+            if name_key not in seen:
+                bucket.append(name)
+                seen.add(name_key)
+    return disease_map
+
+
+DISEASE_DOCTOR_MAP = load_disease_doctor_assignments()
+
+
+def recommend_doctors_for_diseases(disease_names, limit=2):
+    if not disease_names or not DOCTORS_DATA:
+        return []
+
+    def _hospital_key(doc):
+        return _normalize_key(doc.get("focus", "") or "unknown")
+
+    doctor_index = {}
+    for doc in DOCTORS_DATA:
+        doctor_index.setdefault(_normalize_key(doc.get("name", "")), []).append(doc)
+
+    matched_docs = []
+    for disease in disease_names:
+        key = _normalize_key(disease)
+        for assigned_name in DISEASE_DOCTOR_MAP.get(key, []):
+            for doc in doctor_index.get(_normalize_key(assigned_name), []):
+                matched_docs.append(doc)
+
+    recommendations = []
+    used_hospitals = set()
+    used_names = set()
+
+    def _try_add(doc):
+        if len(recommendations) >= limit:
+            return
+        hospital_key = _hospital_key(doc)
+        name_key = _normalize_key(doc.get("name", ""))
+        if not name_key or hospital_key in used_hospitals or name_key in used_names:
+            return
+
+        recommendations.append(
+            {
+                "name": doc.get("name", "Specialist"),
+                "department": doc.get("specialty", "General Medicine"),
+                "hospital": doc.get("focus", "Hospital"),
+                "email": doc.get("email", ""),
+                "phone": doc.get("phone", ""),
+            }
+        )
+        used_hospitals.add(hospital_key)
+        used_names.add(name_key)
+
+    for doc in matched_docs:
+        _try_add(doc)
+        if len(recommendations) >= limit:
+            break
+
+    return recommendations
+
 @app.route("/")
 def home_page():
     return render_template("home.html")
@@ -314,11 +491,7 @@ def analyzer_page():
     prediction = None
     selected_symptoms = []
     top_predictions = []
-    next_steps = [
-        "Rest and stay hydrated.",
-        "Monitor symptoms for 24-48 hours.",
-        "Consult a qualified doctor if symptoms worsen.",
-    ]
+    recommended_doctors = []
 
     if request.method == "POST":
         selected_symptoms = request.form.getlist("symptoms")
@@ -347,6 +520,9 @@ def analyzer_page():
         elif prediction:
             top_predictions = [{"disease": prediction, "probability": 100.0}]
 
+        ranked_diseases = [item["disease"] for item in top_predictions] if top_predictions else ([prediction] if prediction else [])
+        recommended_doctors = recommend_doctors_for_diseases(ranked_diseases, limit=2)
+
     symptom_options = [
         {"value": symptom, "label": prettify_symptom(symptom)}
         for symptom in ALL_SYMPTOMS
@@ -358,10 +534,10 @@ def analyzer_page():
         selected_symptoms=selected_symptoms,
         prediction=prediction,
         top_predictions=top_predictions,
-        next_steps=next_steps,
+        recommended_doctors=recommended_doctors,
     )
-@app.route('/history', methods=['GET', 'POST'])
-def history_page():
+@app.route('/personal_info', methods=['GET', 'POST'])
+def personal_info_page():
     # ----------------------
     # POST: Save new entry
     # ----------------------
@@ -384,14 +560,14 @@ def history_page():
         cur = conn.cursor()
 
         cur.execute("""
-            INSERT INTO users (user_name, height, weight, Age, Gender, Systolic, Diastolic, Heart_rate, blood_sugar)
+            INSERT INTO health_entries (user_name, height, weight, Age, Gender, Systolic, Diastolic, Heart_rate, blood_sugar)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (user_name, height, weight, age, gender, systolic, diastolic, heart_rate, blood_sugar))
 
         conn.commit()
         conn.close()
 
-        return redirect('/history')
+        return redirect('/personal_info')
 
     user_name = session.get("user")
     if not user_name:
@@ -402,12 +578,56 @@ def history_page():
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
 
-    cur.execute("SELECT * FROM users WHERE user_name = ? ORDER BY id DESC", (user_name,))
+    cur.execute("SELECT * FROM health_entries WHERE user_name = ? ORDER BY id DESC", (user_name,))
     entries = cur.fetchall()
 
     conn.close()
+    chart_rows = list(reversed(entries))
 
-    return render_template('history.html', entries=entries)
+    def _to_number(value):
+        try:
+            if value is None or str(value).strip() == "":
+                return None
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    chart_data = {
+        "labels": [str(i + 1) for i in range(len(chart_rows))],
+        "metrics": {
+            "blood_pressure": {
+                "label": "Blood Pressure",
+                "unit": "mmHg",
+                "series": [
+                    {"name": "Systolic", "values": [_to_number(row["Systolic"]) for row in chart_rows]},
+                    {"name": "Diastolic", "values": [_to_number(row["Diastolic"]) for row in chart_rows]},
+                ],
+            },
+            "weight": {
+                "label": "Weight",
+                "unit": "kg",
+                "series": [
+                    {"name": "Weight", "values": [_to_number(row["weight"]) for row in chart_rows]},
+                ],
+            },
+            "heart_rate": {
+                "label": "Heart Rate",
+                "unit": "bpm",
+                "series": [
+                    {"name": "Heart Rate", "values": [_to_number(row["Heart_rate"]) for row in chart_rows]},
+                ],
+            },
+            "blood_sugar": {
+                "label": "Blood Sugar",
+                "unit": "mg/dL",
+                "series": [
+                    {"name": "Blood Sugar", "values": [_to_number(row["blood_sugar"]) for row in chart_rows]},
+                ],
+            },
+        },
+    }
+
+    return render_template('personal_info.html', entries=entries, chart_data=chart_data)
 
 
 

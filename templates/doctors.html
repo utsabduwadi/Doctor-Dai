@@ -63,38 +63,6 @@
     margin-bottom: 18px;
 }
 
-.availability-tabs {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    border: 1px solid #d8e0e8;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 18px;
-}
-
-.availability-tabs input {
-    display: none;
-}
-
-.availability-tabs label {
-    text-align: center;
-    padding: 10px 8px;
-    background: #f7f9fb;
-    color: #425467;
-    cursor: pointer;
-    border-right: 1px solid #d8e0e8;
-    font-size: 14px;
-}
-
-.availability-tabs label:last-of-type {
-    border-right: none;
-}
-
-.availability-tabs input:checked + label {
-    background: #0a86c2;
-    color: #fff;
-}
-
 .apply-btn {
     width: 100%;
     border: none;
@@ -276,18 +244,6 @@
                     placeholder="Enter city or zip code"
                 >
 
-                <label class="field-label">Availability</label>
-                <div class="availability-tabs">
-                    <input type="radio" id="avail_today" name="availability" value="today" {% if selected_availability == 'today' %}checked{% endif %}>
-                    <label for="avail_today">Today</label>
-
-                    <input type="radio" id="avail_week" name="availability" value="week" {% if selected_availability == 'week' %}checked{% endif %}>
-                    <label for="avail_week">This Week</label>
-
-                    <input type="radio" id="avail_month" name="availability" value="month" {% if selected_availability == 'month' %}checked{% endif %}>
-                    <label for="avail_month">This Month</label>
-                </div>
-
                 <button type="submit" class="apply-btn">Apply Filters</button>
             </form>
         </aside>
@@ -310,7 +266,7 @@
                 {% endfor %}
             {% else %}
                 <div class="no-result">
-                    No doctors matched your filters. Try a different specialty, location, or availability.
+                    No doctors matched your filters. Try a different specialty or location.
                 </div>
             {% endif %}
         </section>

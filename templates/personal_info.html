@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+{% block title %}Health History{% endblock %}
+{% block content %}
+
+
+<div class="history-wrap">
+    <section class="history-title">
+        <h1>Health History</h1>
+        <p>Track your health metrics over time. Input your latest measurements and visualize trends to monitor your progress.</p>
+    </section>
+
+    <div class="history-grid">
+        <section class="history-card entry-panel">
+            <h2>Add New Entry</h2>
+            <form action="/personal_info" method="POST">
+    <div class="fields-grid">
+        <div class="field">
+            <label for="height">Height (cm)</label>
+            <input id="height" name="height" type="number" placeholder="170">
+        </div>
+
+        <div class="field">
+            <label for="weight">Weight (kg)</label>
+            <input id="weight" name="weight" type="number" placeholder="70">
+        </div>
+
+        <div class="field">
+            <label for="age">Age</label>
+            <input id="age" name="age" type="number" placeholder="30">
+        </div>
+
+        <div class="field">
+            <label for="gender">Gender</label>
+            <select id="gender" name="gender">
+                <option selected>Select</option>
+                <option>Female</option>
+                <option>Male</option>
+                <option>Other</option>
+            </select>
+        </div>
+
+        <div class="field full">
+            <label>Blood Pressure</label>
+            <div class="mini-grid">
+                <div class="field">
+                    <label for="systolic">Systolic (mmHg)</label>
+                    <input id="systolic" name="systolic" type="number" placeholder="120">
+                </div>
+                <div class="field">
+                    <label for="diastolic">Diastolic (mmHg)</label>
+                    <input id="diastolic" name="diastolic" type="number" placeholder="80">
+                </div>
+            </div>
+        </div>
+
+        <div class="field full">
+            <label for="heart_rate">Heart Rate (bpm)</label>
+            <input id="heart_rate" name="heart_rate" type="number" placeholder="72">
+        </div>
+
+        <div class="field full">
+            <label for="blood_sugar">Blood Sugar (mg/dL)</label>
+            <input id="blood_sugar" name="blood_sugar" type="number" placeholder="100">
+        </div>
+    </div>
+
+    <button type="submit" class="save-btn">+ Save Entry</button>
+</form>
+
+        </section>
+
+        <section class="history-card trend-panel">
+            <div class="trend-top">
+                <h2>Health Trends</h2>
+                <div class="metric-tabs">
+                    <button type="button" class="metric-tab active" data-metric="blood_pressure">Blood Pressure</button>
+                    <button type="button" class="metric-tab" data-metric="weight">Weight</button>
+                    <button type="button" class="metric-tab" data-metric="heart_rate">Heart Rate</button>
+                    <button type="button" class="metric-tab" data-metric="blood_sugar">Blood Sugar</button>
+                </div>
+            </div>
+
+            <p class="showing">Showing data for: <span id="current-metric">Blood Pressure</span></p>
+
+            <div class="chart-box">
+                <div class="chart-legend" id="chart-legend">
+                </div>
+                <svg id="trend-chart" class="chart-svg" viewBox="0 0 760 230" preserveAspectRatio="none" aria-label="Health trend chart">
+                </svg>
+                <p id="chart-empty" class="chart-empty" hidden>No data available for this metric yet.</p>
+            </div>
+
+            <div class="recent">
+    <h3>Recent Entries</h3>
+
+    {% for row in entries %}
+    <div class="entry-row">
+        <div class="entry-date">
+            {{ loop.index }}
+
+        </div>
+
+        <div class="entry-data">
+            <span>BP <strong>{{ row['Systolic'] }}/{{ row['Diastolic'] }}</strong></span>
+            <span>Weight <strong>{{ row['weight'] }} kg</strong></span>
+            <span>Heart Rate <strong>{{ row['Heart_rate'] }} bpm</strong></span>
+            <span>Blood Sugar <strong>{{ row['blood_sugar'] }} mg/dL</strong></span>
+        </div>
+
+        <span class="entry-more">...</span>
+    </div>
+    {% endfor %}
+
+    {% if entries|length == 0 %}
+    <p>No entries found.</p>
+    {% endif %}
+</div>
+
+        </section>
+    </div>
+</div>
+<script id="chart-data" type="application/json">{{ chart_data | tojson }}</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const chartDataNode = document.getElementById("chart-data");
+    if (!chartDataNode) return;
+
+    const chartData = JSON.parse(chartDataNode.textContent);
+    const metricTabs = document.querySelectorAll(".metric-tab");
+    const currentMetricNode = document.getElementById("current-metric");
+    const legendNode = document.getElementById("chart-legend");
+    const chartSvg = document.getElementById("trend-chart");
+    const emptyNode = document.getElementById("chart-empty");
+    const SVG_NS = "http://www.w3.org/2000/svg";
+    const lineColors = ["#1ab3df", "#91b7cb"];
+
+    function svgEl(tag, attrs) {
+        const el = document.createElementNS(SVG_NS, tag);
+        Object.keys(attrs).forEach(function (key) {
+            el.setAttribute(key, attrs[key]);
+        });
+        return el;
+    }
+
+    function clearNode(node) {
+        while (node.firstChild) node.removeChild(node.firstChild);
+    }
+
+    function formatValue(value) {
+        if (typeof value !== "number" || Number.isNaN(value)) return "";
+        return Number.isInteger(value) ? String(value) : value.toFixed(1);
+    }
+
+    function renderLegend(seriesList) {
+        clearNode(legendNode);
+        seriesList.forEach(function (series, index) {
+            const span = document.createElement("span");
+            const dot = document.createElement("i");
+            dot.className = "dot";
+            dot.style.background = lineColors[index] || "#1ab3df";
+            span.appendChild(dot);
+            span.appendChild(document.createTextNode(series.name));
+            legendNode.appendChild(span);
+        });
+    }
+
+    function renderChart(metricKey) {
+        const metric = chartData.metrics[metricKey];
+        if (!metric) return;
+
+        currentMetricNode.textContent = metric.label;
+        renderLegend(metric.series);
+        clearNode(chartSvg);
+
+        const labels = chartData.labels || [];
+        const seriesValues = metric.series.map(function (s) {
+            return s.values.map(function (v) {
+                return typeof v === "number" ? v : null;
+            });
+        });
+
+        const allValues = [];
+        seriesValues.forEach(function (values) {
+            values.forEach(function (v) {
+                if (v !== null) allValues.push(v);
+            });
+        });
+
+        if (!labels.length || !allValues.length) {
+            emptyNode.hidden = false;
+            return;
+        }
+        emptyNode.hidden = true;
+
+        const W = 760;
+        const H = 230;
+        const M = { top: 20, right: 32, bottom: 46, left: 44 };
+        const x0 = M.left;
+        const y0 = M.top;
+        const x1 = W - M.right;
+        const y1 = H - M.bottom;
+        const chartW = x1 - x0;
+        const chartH = y1 - y0;
+
+        const minVal = Math.min.apply(null, allValues);
+        const maxVal = Math.max.apply(null, allValues);
+        const pad = (maxVal - minVal || 1) * 0.12;
+        const yMin = Math.max(0, minVal - pad);
+        const yMax = maxVal + pad;
+        const range = yMax - yMin || 1;
+
+        function xAt(index, total) {
+            if (total <= 1) return x0 + chartW / 2;
+            return x0 + (index / (total - 1)) * chartW;
+        }
+
+        function yAt(value) {
+            return y1 - ((value - yMin) / range) * chartH;
+        }
+
+        chartSvg.appendChild(svgEl("line", { x1: x0, y1: y0, x2: x0, y2: y1, stroke: "#cfe0ea" }));
+        chartSvg.appendChild(svgEl("line", { x1: x0, y1: y1, x2: x1, y2: y1, stroke: "#cfe0ea" }));
+
+        const yTicks = 4;
+        for (let i = 0; i <= yTicks; i += 1) {
+            const tickVal = yMin + ((yTicks - i) / yTicks) * range;
+            const y = y0 + (i / yTicks) * chartH;
+            chartSvg.appendChild(svgEl("line", { x1: x0, y1: y, x2: x1, y2: y, stroke: "#e7eff4" }));
+            const tickLabel = svgEl("text", { x: 2, y: y + 4, "font-size": 12, fill: "#67808f" });
+            tickLabel.textContent = formatValue(tickVal);
+            chartSvg.appendChild(tickLabel);
+        }
+
+        labels.forEach(function (label, index) {
+            const x = xAt(index, labels.length);
+            const text = svgEl("text", { x: x - 8, y: H - 14, "font-size": 12, fill: "#67808f" });
+            text.textContent = label;
+            chartSvg.appendChild(text);
+        });
+
+        seriesValues.forEach(function (values, seriesIndex) {
+            const points = values
+                .map(function (value, index) {
+                    if (value === null) return null;
+                    return xAt(index, values.length) + "," + yAt(value);
+                })
+                .filter(Boolean)
+                .join(" ");
+
+            if (!points) return;
+
+            chartSvg.appendChild(svgEl("polyline", {
+                fill: "none",
+                stroke: lineColors[seriesIndex] || "#1ab3df",
+                "stroke-width": 3,
+                points: points
+            }));
+        });
+    }
+
+    metricTabs.forEach(function (tab) {
+        tab.addEventListener("click", function () {
+            metricTabs.forEach(function (btn) { btn.classList.remove("active"); });
+            tab.classList.add("active");
+            renderChart(tab.dataset.metric);
+        });
+    });
+
+    renderChart("blood_pressure");
+});
+</script>
+{% endblock content %}
