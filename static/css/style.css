@@ -67,13 +67,17 @@ nav a:hover {
 }
 
 .welcome-text {
-    margin: 0 10px;
+    margin: 0 10px 0 30px;
     font-weight: 700;
     letter-spacing: 0.3px;
     background: linear-gradient(90deg, #0b7db6 0%, #12a3b8 45%, #2e5fb8 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+}
+
+.welcome-text + .btn-outline {
+    margin-left: 10px;
 }
 
 .btn-primary {

@@ -202,6 +202,11 @@ def load_doctors_from_excel():
         return []
 
     df = df.dropna(subset=["Name_of_Doctor", "Department"]).copy()
+    phone_col = None
+    for candidate in ["Phone no.", "Phone", "Phone_No", "Contact", "Contact_No", "Mobile", "Mobile no."]:
+        if candidate in df.columns:
+            phone_col = candidate
+            break
     doctors = []
     for idx, row in df.iterrows():
         name = str(row.get("Name_of_Doctor", "")).strip()
@@ -211,6 +216,11 @@ def load_doctors_from_excel():
         if not name or not specialty:
             continue
         slug = _slugify_name(name)
+        raw_phone = row.get(phone_col, "") if phone_col else ""
+        phone = str(raw_phone).strip() if pd.notna(raw_phone) else ""
+        if phone.lower() in {"nan", "none"}:
+            phone = ""
+
         doctors.append(
             {
                 "name": name,
@@ -218,7 +228,7 @@ def load_doctors_from_excel():
                 "experience": f"{8 + (idx % 17)} years experience",
                 "focus": hospital or "Hospital Consultant",
                 "email": f"{slug}@hospital.com",
-                "phone": f"(555) {100 + (idx % 900)}-{1000 + (idx % 9000):04d}",
+                "phone": phone or "Phone not available",
                 "location": location or "Unknown",
                 "availability": (
                     ["today", "week"]
