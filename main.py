@@ -306,6 +306,11 @@ def logout():
 
 @app.route('/analyzer', methods=['GET', 'POST'])
 def analyzer_page():
+    user_name = session.get("user")
+    if not user_name:
+        flash("Please login first!", "danger")
+        return redirect("/login")
+
     prediction = None
     selected_symptoms = []
     top_predictions = []
@@ -408,6 +413,11 @@ def history_page():
 
 @app.route('/doctors')
 def doctor_page():
+    user_name = session.get("user")
+    if not user_name:
+        flash("Please login first!", "danger")
+        return redirect("/login")
+
     selected_specialty = request.args.get("specialty", "").strip()
     selected_location = request.args.get("location", "").strip()
     selected_availability = request.args.get("availability", "").strip().lower()

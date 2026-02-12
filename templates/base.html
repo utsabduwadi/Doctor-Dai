@@ -16,7 +16,7 @@
 
 </head>
 <body>
-<header style="align-items: justify;">
+<header>
  
   <div class="nav-container">
      <div class="logo">
@@ -24,10 +24,12 @@
     </div>
 
     <nav style="font-size:20px;font-family:Helvetica, sans-serif;">
-    <a href="/">Home</a>
-    <a href="/analyzer">Analyze</a>
-    <a href="/doctors">Doctors</a>
-    <a href="/history">History</a>
+      
+        <a href="/">Home</a>
+        <a href="/analyzer">Analyze</a>
+        <a href="/doctors">Doctors</a>
+        <a href="/history">History</a>
+      
 
     {% if session.get("user_id") %}
     <span>Welcome, {{ session.get("user") | upper }}!!</span>
