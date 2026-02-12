@@ -11,7 +11,7 @@ import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '57bbfe3952f5d6871ff495ec'
-MODEL_PATH = "decision_tree_model.pkl"
+MODEL_PATH = r"C:\python\Doctor-Dai\disease_diagnosis_model.pkl"
 TRAINING_DATA_PATH = "Training.csv"
 
 import hashlib
