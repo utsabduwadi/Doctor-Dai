@@ -19,12 +19,10 @@ body {
     color: var(--text);
 }
 
-/* ---------- NAVBAR ---------- */
 
 header {
     background: linear-gradient(90deg, #d1e5f1, #c4ddec);
     border-bottom: 1px solid var(--border);
-    /* background: white; */
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -35,28 +33,22 @@ header {
     
     max-width: 1200px;
     margin: auto;
-    padding: 15px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-
 .logo {
     display: flex;
     align-items: center;
-    gap: 10px;
+    padding: 0;
+    margin: 0;
 }
 
 .logo img {
-    height: 30px;
-}
-
-.logo span {
-    font-size: 20px;
-    font-weight: bold;
-    background: linear-gradient(to right, var(--primary), var(--secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    display: block; /* removes inline spacing below image */
+    margin: 0;
+    padding: 0;
+    height: 70px; /* optional: set a fixed height if needed */
 }
 
 nav a {

@@ -6,13 +6,25 @@ import re
 import zipfile
 import xml.etree.ElementTree as ET
 from sklearn.ensemble import RandomForestClassifier
+import hashlib
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '57bbfe3952f5d6871ff495ec'
 MODEL_PATH = "decision_tree_model.pkl"
 TRAINING_DATA_PATH = "Training.csv"
 
+import hashlib
 
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def verify_password(stored_salt, stored_hash, provided_password):
+    salt = bytes.fromhex(stored_salt)
+    check_hash = hashlib.sha256(salt + provided_password.encode()).hexdigest()
+    return check_hash == stored_hash
+
+    
 def init_prediction_engine():
     try:
         training_df = pd.read_csv(TRAINING_DATA_PATH)
@@ -192,33 +204,35 @@ DOCTORS_DATA = load_doctors_from_excel()
 @app.route("/")
 def home_page():
     return render_template("home.html")
-
 @app.route("/login", methods=["GET", "POST"])
 def login_page():
     if request.method == "POST":
         name = request.form["name"]
         password = request.form["password"]
 
-        # Connect to database
         conn = sqlite3.connect("database.db")
         cur = conn.cursor()
 
-        # Check if user exists
-        cur.execute("SELECT * FROM users WHERE username = ? AND password = ?", (name, password))
+        # Fetch user by username only
+        cur.execute("SELECT id, username, password FROM users WHERE username = ?", (name,))
         user = cur.fetchone()
         conn.close()
 
         if user:
-            # User exists, redirect to home page
-            session['user'] = name  # Optional: store user in session
-            flash("Login successful!", "success")
-            return redirect(url_for("home_page"))
+            userid, username, stored_hash = user
+            # Check hashed password
+            if stored_hash == hash_password(password):
+                session['user'] = username
+                session['user_id'] = userid
+                flash("Login successful!", "success")
+                return redirect(url_for("home_page"))
+            else:
+                flash("Incorrect password. Try again.", "danger")
+                return render_template('login.html')
         else:
-            # User not found, stay on login page with flash message
-            flash("Invalid username or password", "danger")
+            flash("Invalid username", "danger")
             return render_template("login.html")
 
-    # GET request, just render login page
     return render_template("login.html")
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -232,18 +246,43 @@ def signup_page():
         if user_exists(username):
             flash('User already exists!!', category='danger')
             return render_template("signup.html")
-
+        if len(password1) < 6:
+            flash("Password must be greater than or equal to length 6.", 'danger')
+            return render_template('signup.html')
+        if password1 != password2:
+            flash("Password don't match. Try again!", 'danger')
+            return render_template('signup.html')
+        hashed_password = hash_password(password1)
         conn = sqlite3.connect("database.db")
         cur = conn.cursor()
-        cur.execute("INSERT INTO users (username, password, email) VALUES (?, ?, ?)", (username, password1, email))
+
+        cur.execute(
+            "INSERT INTO users (username, password, email) VALUES (?, ?, ?)",
+            (username, hashed_password, email)
+        )
+
         conn.commit()
+
+        # Get the last inserted user id
+        user_id = cur.lastrowid
+
         conn.close()
-        flash('Logged in successfully.', 'success')
+
+        # Store in session
+        session["user_id"] = user_id
+        session["username"] = username
+
+        flash('Signup Successfully.', 'success')
         return redirect(url_for("home_page"))
-    
+
     return render_template("signup.html")
 
-@app.route('/analyzer', methods=['GET', 'POST'])
+@app.route("/logout")
+def logout():
+    session.clear()   
+    flash("You have been logged out.", "info")
+    return redirect("/")
+
 @app.route('/analyze', methods=['GET', 'POST'])
 def analyzer_page():
     prediction = None

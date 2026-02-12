@@ -18,30 +18,31 @@
 <header>
   <div class="nav-container">
     <div class="logo">
-      <img src="{{ url_for('static', filename='images/logo.png') }}">
-      <span>susu</span>
+      <img src="{{ url_for('static', filename='images/logo.png') }}"">
     </div>
 
     <nav style="font-size:20px;font-family:Helvetica, sans-serif;">
-      <a href="/">Home</a>
-      <a href="/analyzer">Analyze</a>
-      <a href="/doctors">Doctors</a>
-      <a href="/history">History</a>
+    <a href="/">Home</a>
+    <a href="/analyzer">Analyze</a>
+    <a href="/doctors">Doctors</a>
+    <a href="/history">History</a>
 
-      {% if session.get("user_id") %}
-        <a href="/logout" class="btn-outline">Logout</a>
-      {% else %}
-        <a href="/login" class="btn-outline">Login</a>
-        <a href="/signup" class="btn-primary">Sign Up</a>
-      {% endif %}
-    </nav>
+    {% if session.get("user_id") %}
+    <span>Welcome, {{ session.get("user").upper() }}!!</span>
+    <a href="/logout" class="btn-outline">Logout</a>
+{% else %}
+    <a href="/login" class="btn-outline">Login</a>
+    <a href="/signup" class="btn-primary">Sign Up</a>
+{% endif %}
+</nav>
+
   </div>
 </header>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
     {% for category, message in messages %}
-      <div class="alert alert-{{ category }} alert-dismissible fade show mt-3" role="alert">
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
         {{ message }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
