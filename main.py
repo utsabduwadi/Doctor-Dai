@@ -68,6 +68,25 @@ def init_db():
             conn.close()
 init_db()
 
+def init_dbp():
+    with sqlite3.connect("personal_database.db") as conn:
+        command = """
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_name TEXT UNIQUE NOT NULL,
+            height REAL,
+            weight REAL,
+            Age INTEGER,
+            Gender TEXT NOT NULL,
+            Systolic INTEGER,
+            Diastolic INTEGER,
+            Heart_rate INTEGER,
+            blood_sugar INTEGER
+        )
+        """
+        conn.execute(command)
+
+init_dbp()
 def user_exists(username):
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
@@ -252,6 +271,8 @@ def signup_page():
         if password1 != password2:
             flash("Password don't match. Try again!", 'danger')
             return render_template('signup.html')
+        session['user'] = username
+        
         hashed_password = hash_password(password1)
         conn = sqlite3.connect("database.db")
         cur = conn.cursor()
@@ -270,7 +291,7 @@ def signup_page():
 
         # Store in session
         session["user_id"] = user_id
-        session["username"] = username
+        session["user"] = username
 
         flash('Signup Successfully.', 'success')
         return redirect(url_for("home_page"))
@@ -283,7 +304,7 @@ def logout():
     flash("You have been logged out.", "info")
     return redirect("/")
 
-@app.route('/analyze', methods=['GET', 'POST'])
+@app.route('/analyzer', methods=['GET', 'POST'])
 def analyzer_page():
     prediction = None
     selected_symptoms = []
@@ -334,10 +355,56 @@ def analyzer_page():
         top_predictions=top_predictions,
         next_steps=next_steps,
     )
-
-@app.route('/history')
+@app.route('/history', methods=['GET', 'POST'])
 def history_page():
-    return render_template('history.html')
+    # ----------------------
+    # POST: Save new entry
+    # ----------------------
+    if request.method == "POST":
+        user_name = session.get("user")
+        if not user_name:
+            flash("Please login first!", "danger")
+            return redirect("/login")
+
+        height = request.form.get("height")
+        weight = request.form.get("weight")
+        age = request.form.get("age")
+        gender = request.form.get("gender")
+        systolic = request.form.get("systolic")
+        diastolic = request.form.get("diastolic")
+        heart_rate = request.form.get("heart_rate")
+        blood_sugar = request.form.get("blood_sugar")
+
+        conn = sqlite3.connect("personal_database.db", timeout=10)
+        cur = conn.cursor()
+
+        cur.execute("""
+            INSERT INTO users (user_name, height, weight, Age, Gender, Systolic, Diastolic, Heart_rate, blood_sugar)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (user_name, height, weight, age, gender, systolic, diastolic, heart_rate, blood_sugar))
+
+        conn.commit()
+        conn.close()
+
+        return redirect('/history')
+
+    user_name = session.get("user")
+    if not user_name:
+        flash("Please login first!", "danger")
+        return redirect("/login")
+
+    conn = sqlite3.connect("personal_database.db")
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+
+    cur.execute("SELECT * FROM users WHERE user_name = ? ORDER BY id DESC", (user_name,))
+    entries = cur.fetchall()
+
+    conn.close()
+
+    return render_template('history.html', entries=entries)
+
+
 
 @app.route('/doctors')
 def doctor_page():

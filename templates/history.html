@@ -1,278 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Health History{% endblock %}
 {% block content %}
-<style>
-    .history-wrap {
-        max-width: 1120px;
-        margin: 26px auto 42px;
-        padding: 0 16px;
-    }
 
-    .history-title {
-        background: #f7fbfd;
-        border: 1px solid #d7e4ec;
-        border-radius: 10px;
-        padding: 18px 20px;
-        margin-bottom: 18px;
-    }
-
-    .history-title h1 {
-        margin: 0;
-        font-size: 34px;
-        font-weight: 700;
-        color: #17384f;
-    }
-
-    .history-title p {
-        margin: 8px 0 0;
-        font-size: 14px;
-        color: #5f7280;
-    }
-
-    .history-grid {
-        display: grid;
-        grid-template-columns: 350px 1fr;
-        gap: 16px;
-        align-items: start;
-    }
-
-    .history-card {
-        background: #fff;
-        border: 1px solid #dbe7ef;
-        border-radius: 10px;
-        box-shadow: 0 8px 20px rgba(12, 42, 63, 0.04);
-    }
-
-    .entry-panel {
-        padding: 16px;
-    }
-
-    .entry-panel h2 {
-        font-size: 20px;
-        margin: 0 0 14px;
-        color: #17384f;
-    }
-
-    .fields-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-    }
-
-    .field {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .field.full {
-        grid-column: 1 / -1;
-    }
-
-    .field label {
-        font-size: 12px;
-        color: #4f6270;
-        font-weight: 600;
-    }
-
-    .field input,
-    .field select {
-        width: 100%;
-        border: 1px solid #d0dde8;
-        border-radius: 7px;
-        padding: 10px 10px;
-        font-size: 14px;
-        color: #17384f;
-        background: #fcfeff;
-    }
-
-    .mini-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-    }
-
-    .save-btn {
-        margin-top: 14px;
-        width: 100%;
-        border: 0;
-        border-radius: 8px;
-        background: linear-gradient(90deg, #0b8fd3, #0677be);
-        color: #fff;
-        font-weight: 700;
-        padding: 12px 14px;
-    }
-
-    .trend-panel {
-        padding: 14px;
-    }
-
-    .trend-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 14px;
-    }
-
-    .trend-top h2 {
-        margin: 0;
-        font-size: 20px;
-        color: #17384f;
-    }
-
-    .metric-tabs {
-        display: flex;
-        gap: 6px;
-        flex-wrap: wrap;
-    }
-
-    .metric-tab {
-        border: 1px solid #d3e2ed;
-        border-radius: 999px;
-        padding: 4px 9px;
-        font-size: 12px;
-        color: #5b7080;
-        background: #f5fafd;
-    }
-
-    .metric-tab.active {
-        border-color: #8ac6e7;
-        color: #10689a;
-        background: #e9f5fc;
-        font-weight: 700;
-    }
-
-    .showing {
-        font-size: 13px;
-        color: #5f7280;
-        margin-bottom: 8px;
-    }
-
-    .showing span {
-        color: #0f6ea3;
-        font-weight: 700;
-    }
-
-    .chart-box {
-        border: 1px solid #e2edf4;
-        border-radius: 10px;
-        padding: 10px 10px 12px;
-        margin-bottom: 16px;
-        background: linear-gradient(180deg, #ffffff, #f8fcff);
-    }
-
-    .chart-legend {
-        display: flex;
-        justify-content: flex-end;
-        gap: 16px;
-        font-size: 12px;
-        color: #657987;
-        margin-bottom: 6px;
-    }
-
-    .dot {
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        margin-right: 6px;
-    }
-
-    .dot.a {
-        background: #1ab3df;
-    }
-
-    .dot.b {
-        background: #91b7cb;
-    }
-
-    .chart-svg {
-        width: 100%;
-        height: 200px;
-    }
-
-    .recent h3 {
-        margin: 0 0 10px;
-        font-size: 18px;
-        color: #17384f;
-    }
-
-    .entry-row {
-        display: grid;
-        grid-template-columns: 120px 1fr auto;
-        gap: 10px;
-        padding: 10px 0;
-        border-bottom: 1px solid #edf3f7;
-        align-items: center;
-    }
-
-    .entry-row:last-child {
-        border-bottom: 0;
-    }
-
-    .entry-date {
-        font-size: 14px;
-        color: #18394f;
-        font-weight: 700;
-    }
-
-    .entry-date span {
-        display: block;
-        color: #7b8f9c;
-        font-weight: 500;
-        font-size: 12px;
-        margin-top: 2px;
-    }
-
-    .entry-data {
-        display: flex;
-        gap: 14px;
-        flex-wrap: wrap;
-        font-size: 13px;
-        color: #4f6270;
-    }
-
-    .entry-data strong {
-        color: #18394f;
-    }
-
-    .entry-more {
-        color: #6b8190;
-        font-weight: 700;
-        font-size: 18px;
-    }
-
-    .view-all {
-        display: inline-block;
-        margin-top: 8px;
-        color: #0f77af;
-        text-decoration: none;
-        font-weight: 700;
-        font-size: 14px;
-    }
-
-    @media (max-width: 980px) {
-        .history-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    @media (max-width: 640px) {
-        .history-title h1 {
-            font-size: 28px;
-        }
-
-        .fields-grid,
-        .mini-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .entry-row {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
 
 <div class="history-wrap">
     <section class="history-title">
@@ -283,53 +12,61 @@
     <div class="history-grid">
         <section class="history-card entry-panel">
             <h2>Add New Entry</h2>
-            <form>
-                <div class="fields-grid">
-                    <div class="field">
-                        <label for="height">Height (cm)</label>
-                        <input id="height" type="number" value="170" placeholder="170">
-                    </div>
-                    <div class="field">
-                        <label for="weight">Weight (kg)</label>
-                        <input id="weight" type="number" value="70" placeholder="70">
-                    </div>
-                    <div class="field">
-                        <label for="age">Age</label>
-                        <input id="age" type="number" value="30" placeholder="30">
-                    </div>
-                    <div class="field">
-                        <label for="gender">Gender</label>
-                        <select id="gender">
-                            <option selected>Select</option>
-                            <option>Female</option>
-                            <option>Male</option>
-                            <option>Other</option>
-                        </select>
-                    </div>
-                    <div class="field full">
-                        <label>Blood Pressure</label>
-                        <div class="mini-grid">
-                            <div class="field">
-                                <label for="systolic">Systolic (mmHg)</label>
-                                <input id="systolic" type="number" value="120" placeholder="120">
-                            </div>
-                            <div class="field">
-                                <label for="diastolic">Diastolic (mmHg)</label>
-                                <input id="diastolic" type="number" value="80" placeholder="80">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="field full">
-                        <label for="heart-rate">Heart Rate (bpm)</label>
-                        <input id="heart-rate" type="number" value="72" placeholder="72">
-                    </div>
-                    <div class="field full">
-                        <label for="blood-sugar">Blood Sugar (mg/dL)</label>
-                        <input id="blood-sugar" type="number" value="100" placeholder="100">
-                    </div>
+            <form action="/history" method="POST">
+    <div class="fields-grid">
+        <div class="field">
+            <label for="height">Height (cm)</label>
+            <input id="height" name="height" type="number" placeholder="170">
+        </div>
+
+        <div class="field">
+            <label for="weight">Weight (kg)</label>
+            <input id="weight" name="weight" type="number" placeholder="70">
+        </div>
+
+        <div class="field">
+            <label for="age">Age</label>
+            <input id="age" name="age" type="number" placeholder="30">
+        </div>
+
+        <div class="field">
+            <label for="gender">Gender</label>
+            <select id="gender" name="gender">
+                <option selected>Select</option>
+                <option>Female</option>
+                <option>Male</option>
+                <option>Other</option>
+            </select>
+        </div>
+
+        <div class="field full">
+            <label>Blood Pressure</label>
+            <div class="mini-grid">
+                <div class="field">
+                    <label for="systolic">Systolic (mmHg)</label>
+                    <input id="systolic" name="systolic" type="number" placeholder="120">
                 </div>
-                <button type="button" class="save-btn">+ Save Entry</button>
-            </form>
+                <div class="field">
+                    <label for="diastolic">Diastolic (mmHg)</label>
+                    <input id="diastolic" name="diastolic" type="number" placeholder="80">
+                </div>
+            </div>
+        </div>
+
+        <div class="field full">
+            <label for="heart_rate">Heart Rate (bpm)</label>
+            <input id="heart_rate" name="heart_rate" type="number" placeholder="72">
+        </div>
+
+        <div class="field full">
+            <label for="blood_sugar">Blood Sugar (mg/dL)</label>
+            <input id="blood_sugar" name="blood_sugar" type="number" placeholder="100">
+        </div>
+    </div>
+
+    <button type="submit" class="save-btn">+ Save Entry</button>
+</form>
+
         </section>
 
         <section class="history-card trend-panel">
@@ -381,36 +118,32 @@
             </div>
 
             <div class="recent">
-                <h3>Recent Entries</h3>
-                <div class="entry-row">
-                    <div class="entry-date">Aug 15<span>2024</span></div>
-                    <div class="entry-data">
-                        <span>BP <strong>120/80</strong></span>
-                        <span>Weight <strong>70 kg</strong></span>
-                        <span>Heart Rate <strong>72 bpm</strong></span>
-                    </div>
-                    <span class="entry-more">...</span>
-                </div>
-                <div class="entry-row">
-                    <div class="entry-date">Aug 8<span>2024</span></div>
-                    <div class="entry-data">
-                        <span>BP <strong>118/78</strong></span>
-                        <span>Weight <strong>69.5 kg</strong></span>
-                        <span>Heart Rate <strong>70 bpm</strong></span>
-                    </div>
-                    <span class="entry-more">...</span>
-                </div>
-                <div class="entry-row">
-                    <div class="entry-date">Aug 1<span>2024</span></div>
-                    <div class="entry-data">
-                        <span>BP <strong>122/82</strong></span>
-                        <span>Weight <strong>70.2 kg</strong></span>
-                        <span>Heart Rate <strong>74 bpm</strong></span>
-                    </div>
-                    <span class="entry-more">...</span>
-                </div>
-                <a class="view-all" href="#">View all entries ></a>
-            </div>
+    <h3>Recent Entries</h3>
+
+    {% for row in entries %}
+    <div class="entry-row">
+        <div class="entry-date">
+
+            {{ row['id'] }} <!-- You can replace with actual date when you add it -->
+
+        </div>
+
+        <div class="entry-data">
+            <span>BP <strong>{{ row['Systolic'] }}/{{ row['Diastolic'] }}</strong></span>
+            <span>Weight <strong>{{ row['weight'] }} kg</strong></span>
+            <span>Heart Rate <strong>{{ row['Heart_rate'] }} bpm</strong></span>
+            <span>Blood Sugar <strong>{{ row['blood_sugar'] }} mg/dL</strong></span>
+        </div>
+
+        <span class="entry-more">...</span>
+    </div>
+    {% endfor %}
+
+    {% if entries|length == 0 %}
+    <p>No entries found.</p>
+    {% endif %}
+</div>
+
         </section>
     </div>
 </div>
