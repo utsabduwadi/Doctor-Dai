@@ -8,23 +8,20 @@ import xml.etree.ElementTree as ET
 from sklearn.ensemble import RandomForestClassifier
 import hashlib
 import os
+import hashlib
+from Data_Bases.databs import init_db, init_dbp, user_exists
+init_dbp()
+init_db()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '57bbfe3952f5d6871ff495ec'
-MODEL_PATH = r"C:\python\Doctor-Dai\disease_diagnosis_model.pkl"
-TRAINING_DATA_PATH = "Training.csv"
+MODEL_PATH = "models_req/disease_diagnosis_model.pkl"
+TRAINING_DATA_PATH = "models_req/Training.csv"
 
-import hashlib
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
-def verify_password(stored_salt, stored_hash, provided_password):
-    salt = bytes.fromhex(stored_salt)
-    check_hash = hashlib.sha256(salt + provided_password.encode()).hexdigest()
-    return check_hash == stored_hash
-
-    
 def init_prediction_engine():
     try:
         training_df = pd.read_csv(TRAINING_DATA_PATH)
@@ -48,66 +45,6 @@ def init_prediction_engine():
 
 
 model, MODEL_FEATURES, ALL_SYMPTOMS = init_prediction_engine()
-
-def init_db():
-    conn = None
-    try:
-        conn = sqlite3.connect("database.db")
-        cur = conn.cursor()
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT UNIQUE NOT NULL,
-                password TEXT NOT NULL,
-                email TEXT UNIQUE NOT NULL
-            )
-        """)
-        conn.commit()
-    finally:
-        if conn:
-            conn.close()
-init_db()
-
-def init_dbp():
-    with sqlite3.connect("personal_database.db") as conn:
-        conn.execute("""
-        CREATE TABLE IF NOT EXISTS health_entries (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_name TEXT NOT NULL,
-            height REAL,
-            weight REAL,
-            Age INTEGER,
-            Gender TEXT,
-            Systolic INTEGER,
-            Diastolic INTEGER,
-            Heart_rate INTEGER,
-            blood_sugar INTEGER
-        )
-        """)
-
-        # One-time migration from legacy table shape (users.user_name UNIQUE)
-        legacy_exists = conn.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
-        ).fetchone()
-        if legacy_exists:
-            conn.execute("""
-                INSERT INTO health_entries (id, user_name, height, weight, Age, Gender, Systolic, Diastolic, Heart_rate, blood_sugar)
-                SELECT id, user_name, height, weight, Age, Gender, Systolic, Diastolic, Heart_rate, blood_sugar
-                FROM users
-                WHERE NOT EXISTS (
-                    SELECT 1 FROM health_entries he WHERE he.id = users.id
-                )
-            """)
-
-init_dbp()
-def user_exists(username):
-    conn = sqlite3.connect("database.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
-    user = cursor.fetchone()
-    conn.close()
-    return user is not None
-
 
 def prettify_symptom(symptom):
     return " ".join(symptom.replace("_", " ").split()).title()
@@ -186,10 +123,10 @@ def _load_sheet1_rows_without_openpyxl(file_path):
 
 def load_doctors_from_excel():
     try:
-        df = pd.read_excel("doctor.xlsx", sheet_name="Sheet1")
+        df = pd.read_excel("Dataset/doctor.xlsx", sheet_name="Sheet1")
     except Exception:
         try:
-            df = pd.DataFrame(_load_sheet1_rows_without_openpyxl("doctor.xlsx"))
+            df = pd.DataFrame(_load_sheet1_rows_without_openpyxl("Dataset/doctor.xlsx"))
         except Exception:
             df = pd.DataFrame()
 
@@ -249,7 +186,7 @@ def _normalize_key(value):
 
 
 def load_disease_doctor_assignments():
-    file_path = "Disease_With_Doctor_Assignment.xlsx"
+    file_path = "Dataset/Disease_With_Doctor_Assignment.xlsx"
     ns_main = {"a": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
     ns_rel_pkg = {"r": "http://schemas.openxmlformats.org/package/2006/relationships"}
 
