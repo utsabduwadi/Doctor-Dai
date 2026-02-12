@@ -1,3 +1,4 @@
+from datetime import timedelta
 from flask import Flask, render_template, request, url_for, redirect, flash, session
 import joblib
 import pandas as pd
@@ -347,6 +348,11 @@ def recommend_doctors_for_diseases(disease_names, limit=2):
 @app.route("/")
 def home_page():
     return render_template("home.html")
+
+
+
+app.config['SESSION_PERMANENT'] = False
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 @app.route("/login", methods=["GET", "POST"])
 def login_page():
     if request.method == "POST":
